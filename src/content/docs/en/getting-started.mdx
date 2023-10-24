@@ -1,0 +1,197 @@
+---
+title: Getting Started
+description: Getting started with MMX.
+i18nReady: true
+---
+import Button from '~/components/Button.astro'
+import TranslatorList from '~/components/TranslatorList.astro'
+import ContributorList from '~/components/ContributorList.astro'
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro'
+
+To continue enter the CLI environment:
+```
+cd mmx-node
+source ./activate.sh
+```
+
+## Creating a Wallet
+
+```
+mmx wallet create [-f filename]
+```
+
+The file name argument is optional, by default it is `wallet.dat`, which is already included in the default configuration.
+
+To use more wallets add the paths to `key_files` array in `config/local/Wallet.json`.
+
+To create a wallet with a known seed hash:
+```
+mmx wallet create <seed_hash> [-f filename]
+```
+
+To create a wallet with a known mnemonic seed:
+```
+mmx wallet create --mnemonic word1 word2 ... [-f filename]
+```
+
+To get the mnemonic seed from a wallet (with Node / Wallet already running):
+```
+mmx wallet get seed [-j index]
+```
+
+Note: A Node / Wallet restart is needed to pick up a new wallet.
+
+Note: Alternatively you can create a wallet in the GUI now: http://localhost:11380/gui/#/wallet/create
+
+## Configuration
+Note: Capitalization of configuration files matters. \
+Note: Any config changes require a node restart to become effective.
+
+#### Custom Farmer Reward Address
+
+Create / Edit file `config/local/Farmer.json`:
+```
+{
+	"reward_addr": "mmx1..."
+}
+```
+By default the first address of the first wallet is used.
+
+#### Custom Timelord Reward Address
+
+Create / Edit file `config/local/TimeLord.json`:
+```
+{
+	"reward_addr": "mmx1..."
+}
+```
+
+#### Fixed Node Peers
+
+Create / Edit file `config/local/Router.json`:
+```
+{
+	"fixed_peers": ["192.168.0.123", "more"]
+}
+```
+
+#### Enable Timelord
+```
+echo true > config/local/timelord
+```
+
+#### Custom data directory
+
+To have the blockchain and DB stored in a custom directory you can set environment variable `MMX_DATA` (for example):
+```
+export MMX_DATA=/mnt/mmx_data/
+```
+A node restart is required. Optionally the previous `testnetX` folder can be copied to the new `MMX_DATA` path (after stopping the node), to avoid having to sync from scratch again.
+
+## Plotting
+
+To get the farmer and pool keys for plotting:
+```
+mmx wallet keys [-j index]
+```
+
+The node needs to be running for this command to work. (`-j` to specify the index of a non-default wallet)
+
+Note: During plotting, the node does not need to be running (the plotter doesn't even need internet connection).
+
+Once you're ready to make MMX plots, run the latest version of my plotter and add the parameter "-x 11337".
+
+Download plotter here: https://github.com/madMAx43v3r/chia-plotter/
+
+
+It will show the following output at the beginning to confirm the new plot format (from testnet3 onwards):
+```
+Network Port: 11337 [MMX] (unique)
+```
+The new plots will have a name starting with "plot-mmx-". Plots created before that version are only valid on testnet1/2.
+
+The minimum K size for mainnet will be k30, for testnets it is k26. The plots from testnet3 and onwards can be reused for mainnet later.
+However there will be a time limit for k30 and k31, ~3 years for k30 and ~6 years for k31, to prevent grinding attacks in the future.
+
+To add a plot directory add the path to `plot_dirs` array in `config/local/Harvester.json`, for example:
+```
+{
+	"plot_dirs": [
+		"/mnt/drive1/plots/",
+		"/mnt/drive2/plots/",
+		"C:/windows/path/example/"
+	]
+}
+```
+Directories are searched recursively by default. To disable recursive search you can set `recursive_search` to `false` in `Harvester.json`.
+
+For the above reason, avoid adding a root directory (e.g. H:\). Instead, make a folder and place all your plots in there (e.g. H:\MMX Plots\).
+
+## Running a Node
+
+First perform the installation and setup steps.
+
+To run a node for the current testnet:
+```
+./run_node.sh
+```
+
+You can enable port forwarding on TCP port 12338, if you want to help out the network and accept incoming connections.
+
+To set a custom storage path for the blockchain, wallet files, etc:
+```
+export MMX_HOME=/your/path/
+```
+Wallet files will end up in `MMX_HOME`, everything else in a `testnetX` subfolder. By default `MMX_HOME` is not set, so it's the current directory.
+
+### Reducing network traffic
+
+If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
+For example to run at the bare recommended minimum:
+```
+{
+	"num_peers_out": 4,
+	"max_connections": 4
+}
+```
+`num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
+Keep in mind this will increase your chances of losing sync.
+
+Another more drastic measure is to disable relaying messages to other nodes, by setting `do_relay` to `false` in `config/local/Router.json`.
+However this will hurt the network, so please only disable it if absolutely necessary.
+
+### Running in background
+
+To run a node in the background you can enter a `screen` session:
+```
+screen -S node
+(start node as above)
+<Ctrl+A> + D (to detach)
+screen -r node (to attach again)
+```
+
+### Recover from forking
+
+To re-sync starting from a specific height: `./run_node.sh --Node.replay_height <height>`.
+Or while running: `mmx node revert <height>`.
+This is needed if for some reason you forked from the network. Just subtract 500 or 1000 blocks from the current height you are stuck at.
+To re-sync from scratch delete `block_chain.dat` and `db` folder in `testnetX`, or run `mmx node revert 0`.
+
+### Switching to latest testnet
+
+After stopping the node:
+```
+rm NETWORK
+./update.sh
+./run_node.sh
+```
+Blockchain data are now stored in `testnetX` folder by default.
+
+
+## Access WebGUI
+
+To access WebGUI, go to: http://localhost:11380/gui/
+
+Check $MMX_HOME/PASSWD for the login password, it's automatically generated at first launch.
+
+Only available on localhost, because of _full access_ to your wallet.

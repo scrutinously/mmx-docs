@@ -1,0 +1,36 @@
+---
+title: Tutorial - Creating a token contract manually
+description: >-
+  Create a token contract and launch via CLI.
+i18nReady: true
+---
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro';
+import Box from '~/components/tutorial/Box.astro';
+import MultipleChoice from '~/components/tutorial/MultipleChoice.astro';
+import PreCheck from '~/components/tutorial/PreCheck.astro';
+import Option from '~/components/tutorial/Option.astro';
+
+# Token Contracts
+Token contracts can be created either as a mint by owner only token, a mint by owner and staking token, or an ownerless staking token. 
+The advantage of the mint only token is that the owner address controls the supply of the token, similarly for the mint and stake token, 
+the owner can create an initial supply for immediate use, and then future supply can be provided by staking. 
+The advantage of the ownerless staking token is that there is no fixed supply, and new tokens can only be created through staking. 
+Unlike the mint and stake, the token creator can not create a bunch of tokens out of thin air.
+
+To deploy any contract to the blockchain, you will need to have a small amount of mmx in your wallet.
+
+## Example
+```
+{
+	"__type": "mmx.contract.Executable",
+	"name": "Meme Coin",
+	"symbol": "MEME",
+	"decimals": 6,
+	"binary": "mmx1rnang04sx9srtf8kxzkyrn6mj6wcgwjjmthwmflvaxpnds9ev7eqdug0ag",
+	"init_args": ["mmx1owner..."]
+}
+```
+In this example for memecoin, the decimals is set to 6 (1 million mojo equivalent) which sets 1 memecoin to the same scale as 1 mmx. 
+The owner address must be set to a wallet address that you control, or else you won't be able to use the contract to mint tokens. 
+This gets saved as a json file, and can then be deployed with `mmx wallet deploy /path/to/file.json`. 
+When deployed, the contract will appear in the owner's wallet and tokens can be minted with `mmx wallet mint -a <amount> -x <token contract address> -t <target wallet address>`.

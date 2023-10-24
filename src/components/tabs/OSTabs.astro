@@ -1,0 +1,19 @@
+---
+import Tabs from './Tabs';
+---
+
+<Tabs client:idle sharedStore="operating-systems">
+	<Fragment slot="tab.ubuntu">Ubuntu</Fragment>
+	<Fragment slot="tab.fedora">Fedora</Fragment>
+	<Fragment slot="tab.arch">Arch Linux</Fragment>
+
+	<Fragment slot="panel.ubuntu">
+		<slot name="ubuntu" />
+	</Fragment>
+	<Fragment slot="panel.fedora">
+		<slot name="fedora" />
+	</Fragment>
+	<Fragment slot="panel.arch">
+		<slot name="arch" />
+	</Fragment>
+</Tabs>

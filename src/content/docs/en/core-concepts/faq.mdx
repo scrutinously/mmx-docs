@@ -1,0 +1,407 @@
+---
+title: Frequently Asked Questions
+description: Frequently Asked Questions
+i18nReady: true
+---
+
+
+### _When is mainnet launch?_
+Current latest estimate is H1 2024.
+
+### _What is MMX? What problem is MMX trying to solve/how is it solving any problems any differently than other blockchains?_
+MMX is (not) just another blockchain with a native token on it. Its code is written from scratch, using proven logic from Chia's Proof of Space and improved SHA256 VDF similar to Solana. It's designed to be secure, fast, high throughput and energy efficient. MMX is truly decentralized, such that any transaction that is included into the blockchain costs transaction fee. This economically prevents grinding attack to the network. In order to help stabilize its price, farmers are rewarded variably, depending on netspace plus transaction fees on that block. By controlling the coin supply, it helps to prevent inflation and deflation. The native token MMX is designed to be used as an everyday currency.
+
+### _How does the variable reward model work?_
+The (simplified) variable reward function is as follows:
+\
+`reward = max(difficulty * const_factor, min_reward) + TX fees`
+\
+Where `min_reward` and `const_factor` are fixed at launch. This means that when a farmer wins a block, the reward they receive will be the higher of the 2 values: the minimum block reward (0.5 MMX) or the calculated farmer reward based on total netspace, plus the transaction fees for that block. There is no limit on coins produced, and instead the value of the coin will depend on cost to farm as well as demand for the coin.
+
+### _Is there any pre-farm?_
+No, but starting from testnet8 (starting from block 25,000), we incentivize farmers who participate, contribute and report bugs. For every block won, the reward address is recorded and will be paid a fixed 0.25 MMX at the genesis block in mainnet. This also applies for testnet9 and subsequent testnets before mainnet launch.
+
+### _How many MMX coins do I get per block reward?_
+It depends on average TX fee and the total netspace.
+
+```
+block reward = max(max(X, 0.5) - average_tx_fees, 0) + tx_fees
+```
+where X is the variable reward from netspace.
+```
+Netspace        Reward
+< 250 PB        0.50 MMX
+> 250 PB        2.00 MMX / EB
+```
+Note that if the block is won by a virtual plot, the farmer only gets transaction fees, no block reward.
+
+### _Is there any dev fees?_
+On mainnet, there will be a dev fee for MMX transfer, token transfer and swap/trade.
+Starting from testnet10 and mainnet, there will not be dev fee on block reward.
+
+### _How do you intend to prevent a replotting/grinding attack?_
+The replotting attack isn't so much an attack as it is an alternative way to provide proofs. Continuously replotting means using a very fast system to constantly make new plots that will always pass the filter, then dumping those plots out of memory when the next plot filter arrives. This would be the equivalent of having enough plots to always pass the plot filter. For a plot filter of 512, this means having 512 plots. While it could theoretically be possible to conduct such an attack with consumer hardware for k29 right now, it is not economically feasible to do so because it's much cheaper to buy storage for 512 plots. Passing the plot filter does not mean providing a successful proof and winning the block. To maintain MMX as proof of space and prevent it from turning into a proof of work grind, k30 will only be the minimum valid k-size for 3 years after mainnet launch, and k31 for 3 years beyond that and so on. In the event that technology advances faster than expected and grindable hardware is affordable sooner than expected, the plot filter can be reduced, thus lowering the number of "simulated" plots each fast plot is worth.
+
+### _What kind of computer do I need to run MMX operations?_
+To make MMX plots, you need a computer with many fast cores/threads and high disk I/O. Some users use NVME SSDs to plot, some advanced users have even replaced NVME SSDs with RAM disk. (See below)
+
+To farm plotted MMX plots, you only need a computer with 4GB RAM and a decently fast CPU, like a dual-core Pentium or even Celeron. Most CPUs from 2015+ can run MMX harvester. In a local area network, you can run multiple harvester machines connected to one node.
+
+However the node has to verify VDFs, which requires either a fast CPU or a (decent) GPU.
+
+### _What is VDF and why do we need to do it as a farmer?_
+A Verifiable Delay Function, is the Proof of Time part in Proof of Space and Time. It is referred to as a proof that a sequential function was executed a certain number of times.
+
+Verifiable: A verifier can verify the proof in a shorter amount of time than it took to generate it.
+
+Delay: It proofs that a certain amount of real time has elapsed.
+
+Function: This means it’s deterministic. Computing a VDF with an input x always yields the same result y.
+
+### _Can I use Chia/Chives plots to farm MMX?_
+No. Like Chives, MMX is using unique plots to differentiate itself from Chia. If the value of the coin rises, additional netspace will be plotted, which will increase the production of new coins, which will re-balance the coin value in a feedback loop.
+
+### _I don't have a lot of free space that I can allocate for MMX plots. Is it worth to farm MMX if I only have xxx TB?_
+I'd say it depends on your goals, the netspace on mainnet and your space allocation. But if you want to estimate your time to win MMX per day, you can use this calculator:
+
+https://docs.google.com/spreadsheets/d/1io9pQs4lQiGp3R0vszy9lF_cCNTmY32g5ECSlmFEjPE/
+
+
+## Plotting
+
+### _How do I get started? How do I make/create MMX plots?_
+
+For Linux users, go to https://github.com/madMAx43v3r/chia-gigahorse/
+
+For Windows users, go to https://github.com/madMAx43v3r/chia-gigahorse/releases
+
+For -p [poolkey] and -f [farmerkey], see output of `mmx wallet keys`.
+
+In order to do this, first you have to create a wallet. (See below how to create a wallet)
+
+To plot for pools, specify -c [contract address] instead of -p [poolkey].
+
+For k32 plot size, [tmpdir] needs about 220 GiB space and it will handle about 25% of all writes.
+[tmpdir2] needs about 110 GiB space and ideally is a RAM drive - it will handle about 75% of all writes.
+Combined (tmpdir + tmpdir2) peak disk usage is less than 256 GiB.
+
+:::note[Usage:]
+  chia_plot [OPTION...]
+
+  -k, --size arg	K size (default = 32, k < = 32)
+
+  -x, --port arg	Network port (default = 8444, chives = 9699, mmx = 11337)
+
+  -n, --count arg	Number of plots to create (default = 1, -1 = infinite)
+
+  -r, --threads arg	Number of threads (default = 4)
+
+  -u, --buckets arg	Number of buckets (default = 256)
+
+  -v, --buckets3 arg	Number of buckets for phase 3+4 (default = buckets)
+
+  -t, --tmpdir arg	Temporary directory, needs ~220 GiB (default = $PWD)
+
+  -2, --tmpdir2 arg	Temporary directory 2, needs ~110 GiB [RAM] (default = [tmpdir])
+
+  -d, --finaldir arg	Final directory to copy plot in parallel (default = [tmpdir])
+
+  -s, --stagedir arg	Stage directory to write plot file (default = [tmpdir])
+
+  -w, --waitforcopy	Wait for copy to start next plot
+
+  -p, --poolkey arg	Pool Public Key (48 bytes)
+
+  -c, --contract arg	Pool Contract Address (62 chars)
+
+  -f, --farmerkey arg	Farmer Public Key (48 bytes)
+
+  -G, --tmptoggle	Alternate tmpdir/tmpdir2 (default = false)
+
+  -D, --directout	Create plot directly in finaldir (default = false)
+
+  -Z, --unique		Make unique plot (default = false)
+
+  -K, --rmulti2 arg	Thread multiplier for P2 (default = 1)
+
+  --version		Print version
+
+  --help		Print help
+:::
+
+In case of -n [count] != 1, you may press Ctrl-C for graceful termination after current plot is finished,
+or double press Ctrl-C to terminate immediately.
+
+Example:
+```
+./chia_plot -f [insert your public farmer key here] -p [insert your pool key here] -u 128 -k 30 -x 11337 -t /mnt/NVME/Temp/ -2 /mnt/ramdisk/ -d /mnt/NVME/Temp/ -r 6 -K 2 -n 18
+```
+
+### _How do I make the plotter log into a text file for each plot created?_
+At the end of the command, add `2>&1 | tee /home/user/desired_path/$(uuid).log;`
+
+Example:
+```
+./chia_plot -f [insert your public farmer key here] -p [insert your pool key here] -u 128 -k 30 -x 11337 -t /mnt/NVME/Temp/ -2 /mnt/ramdisk/ -d /mnt/NVME/Temp/ -r 6 -K 2 -n 18 2>&1 | tee /home/user/desired_path/(filename).log;
+```
+
+### _What size plots are supported? If I start plotting now for testnet8/9, can I use the same plots to farm on mainnet?_
+For testnet, k26 and higher. ~~For mainnet, k30 plots will be valid for 3 years, k31 plots will be valid for 6 years, while k32 and up have no time restriction.~~ There is a proposed new plot format for testnet11, where there is no plot filter to oppose compressed plots. More details will be revealed later.
+
+### _What are the benefits of plotting and farming higher k sizes?_
+A single k31 plot has roughly the size of two k30 plots. It is also twice as likely to find a proof. However, as seen above, plotting a higher k size also requires higher allocation of resources (temp space) and longer plotting time. For a small farm with a total number of plots less than 10000, plotting k30 plots is fine. For a large farm, it is better to plot higher k size plot to minimize the look-up time for finding proofs at every block height.
+
+Lookup times of < 1 sec is considered good and  < 3 sec is acceptable, whereas anything higher than 5 seconds risk losing block rewards.
+
+### _Can I use RAMdisk to make plots?_
+Yes, here is the following size requirements for different k sizes:
+```
+    Temp1 (GiB)  Temp2 (GiB)  Combined Peak (GiB)  Final Plot size (GiB)
+
+k30     55           27             < 64               24
+
+k31     110          55              123               50
+
+k32     220          110             247               101
+
+k33     440          249            < 512              209
+
+k34     880          500            < 1024             430
+```
+**Note: The numbers above are just an approximation.**
+
+### _Can I start making NFT plots now for MMX?_
+Yes, you can make NFT plots, but you cannot farm them yet. Any NFT plot created now, will not be valid for mainnet, because they will be on a different blockchain and therefore, different contract pool key.
+
+### _Can I use my GPU to make plots?_
+YES, in January 2023 Max released Gigahorse GPU plotter:
+
+https://github.com/madMAx43v3r/mmx-binaries/tree/master/mmx-cuda-plotter
+
+
+
+## VDF Verifications
+
+### _What kind of GPU is supported for verifying the VDF? What's the minimum required/recommended GPU for VDF verifications?_
+Nvidia's GT1030 is affordable, power efficient and does VDF verifications in < 2 seconds, while the GTX1650 does it in ~1 second. For best results, devices which support OpenCL 1.2 are recommended. It has been demonstrated that OpenCL 1.1 devices can verify VDFs, but performance is significantly lower than cards even 1 generation newer, and the additional requirement of installing specific drivers to support the older cards can be challenging, depending on the operating system used. For a list of supported GPUs, please see:
+
+https://docs.google.com/spreadsheets/d/1LqyZut0JBwQpbCBnh73fPXkT-1WbCYoXVnIbf6jeyac/
+
+### _My node is showing `VDF verification took longer than recommended: x.xxx sec` or `[Node] WARN: VDF verification took longer than block interval, unable to keep sync!`. What is wrong?_
+Verification times below 3 sec is good, whereas anything > 5 seconds is bad. If your VDF verification, either done by the CPU or GPU, took more than 5 seconds, then you will get this warning message. Upgrading your CPU or GPU is strongly recommended. To see a list of  VDF times from popular GPUs, please see:
+
+https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/
+
+### _How do I get OpenCL to do VDF verifications?_
+https://github.com/madMAx43v3r/mmx-node/wiki/Using-OpenCL-for-VDF-Verification
+
+### _How do I know if I have installed and set up OpenCL drivers correctly?_
+Run clinfo in the command line. If it's showing at least 1 platform, it should work properly.
+
+For Windows, download proprietary clinfo utility from:
+
+https://opencl.gpuinfo.org/download.php
+
+### _I have an Intel/AMD CPU that come with an iGPU and another discrete GPU installed. MMX can use the iGPU to do OpenCL VDF, but not with the discrete GPU. How can I use the discrete GPU to do OpenCL VDF?_
+First, install the drivers for the discrete GPU. Use clinfo for Linux or for Windows, download clinfo utility here:
+
+https://opencl.gpuinfo.org/download.php
+
+Perform OpenCL hardware diagnostic/info tool and get `cl_platform_name`
+
+Then run the node with the GPU you want OpenCL to be done with:
+`./run_node.sh --opencl.platform "name"`
+
+For Nvidia, it's "NVIDIA CUDA"
+
+For AMD, it's "AMD Accelerated Parallel Processing"
+
+For Intel, it's "Intel(R) OpenCL"
+
+For a more permanent solution (or in Windows), you can also create a file named `platform` in ~/config/local/opencl/ and put the platform name in there. Please include the quotes "".
+
+If you have an AMD APU and another AMD discrete GPU with the same platform name, you can select which OpenCL device to use:
+`./run_node.sh --Node.opencl_device 0/1`
+
+Or if you have an AMD APU and a mix of discrete AMD/Nvidia GPUs, you can combine the parameters. Example:
+`./run_node.sh --Node.opencl_device 2 --opencl.platform "NVIDIA CUDA"`
+
+If you want to force use your CPU to do VDFs, while having a GPU installed in your computer, you can run this command:
+`./run_node.sh --Node.opencl_device -1`
+
+### _How do I know if MMX is using my GPU to do VDFs?_
+Start a node, look for this line:
+
+[Node] INFO: Using OpenCL GPU device [0] GeForce RTX 3070 Ti (total of 1 found)
+
+If you have more than 1 GPU, please select accordingly in file `/config/local/Node.json`.
+
+### _I have installed and set up OpenCL drivers correctly, yet MMX only uses my CPU. What is wrong?_
+VDF verification is done every 10 seconds and only for the latest block height. Syncing still uses the CPU.
+
+
+## Node
+
+### _Okay I have synced up to the latest blockchain height and I still see high CPU usage and some GPU?_
+Please check that there are no background processes and you are not running the timelord.
+
+### _The timelord is taking a huge chunk of my CPU usage, how do I disable it?_
+You can disable it in GUI settings. (It's disabled by default now)
+
+Alternatively, create a file named `timelord` (all lower case) in `config/local/`. Open the file in text editor and type `false`. Or simply run `echo false > config/local/timelord` and then restart the node.
+
+For Windows, put the file in `C:\Users\name\.mmx\config\local\`
+
+**Do not edit any files in `Program Files`**
+
+### _I tried to run one of the `mmx ....` commands and I'm getting `[Proxy] WARN: connect() failed with: 10061 (localhost:11331)` error. What's wrong?
+Before running a `mmx ...` command in a new terminal, you need to `source ./activate.sh` inside the `mmx-node` directory first, and the node needs to be running (except for `mmx wallet create`).
+
+### _Where can I find a list of CLI commands for MMX node?_
+https://github.com/madMAx43v3r/mmx-node/wiki/CLI-Commands
+
+### _I left my node running for several hours and when I came back, it's saying that I have forked from the network and there is no way of recovering/syncing to the current height. How can I fix this?_
+
+You can revert to a lower height in the GUI settings page now. The height should be about 1000 blocks before the node gets stuck.
+
+Alternatively, run `mmx node revert [height]` while the node is running. 
+
+### _I copied the `block_chain.dat` file from another machine and now my node is saying I have forked from the network and there is no way of recovering/syncing to the current height. Or I suspect my database is corrupted. How can I fix this?_
+Stop the node, then delete the `db` folder in `testnetX` and restart the node. Note that this will re-build the database and take some time.
+
+### _I have tried replay_height and deleting the `db` folder and my node still won't sync. What do I do?_
+Stop the node, then delete the `testnetX` folder and restart node. This will sync from scratch and might take some time.
+
+### _I've just started plotting. Can I farm my plotted space right away? How do I add my plots so the harvester reads my plots properly?_
+Adding plot directories is now possible in the GUI settings page.
+
+Alternatively, open `config/local/Harvester.json` with a text editor. Follow the syntax below:
+```
+{
+  "reload_interval": 3600,
+  "farm_virtual_plots": true,
+  "recursive_search": false,
+  "plot_dirs": [
+    "E:/MMXPlots",
+    "E:/Test Folder/",
+    "E:/Folder/Subfolder",
+    "/mnt/Seagate13/MMXPlots/",
+    "/mnt/Seagate42/MMXPlots/"
+  ]
+}
+```
+You may also put everything on 1 line if it helps you to see all the plot drives/folders:
+```
+"plot_dirs": ["D:/", "E:/", "F:/", "G:/", "H:/", "I:/", "J:/", "K:/", "L:/"]
+```
+Backward slash "`\`" is not supported, so forward slash "`/`" must be used.
+Note that the last entry is not followed by a `,`
+
+### _My node returned `[Router] INFO: Broadcasting proof for height 65105 with score 25761`. Why did a plot with lower score eventually win that block?_
+The score is actually an indication of how close your plot has proofs for the challenge. The lower the score, the better the proof is.
+
+### _Do I need to open some ports to allow MMX to communicate with other peers?_
+You don't have to. But if you have fast internet connection and feel like helping out the network by allowing incoming connections, you can enable port forwarding on TCP 12338 for testnet8.
+
+UPnP automatic port forwarding is now enabled by default, however it can disabled in GUI settings.
+
+### _How do I upgrade to a newer testnet?_
+```
+cd into your ~/mmx-node/
+rm NETWORK
+./clean_all.sh (optional)
+./update.sh
+```
+### _My setup is a complicated mix of several computers, where I run a full node on one computer and a few remote harvesters. How do I set them up?_
+https://github.com/madMAx43v3r/mmx-node/wiki/Remote-Services
+
+
+# Web GUI
+
+### _How do I access the web GUI?_
+Since testnet6, WebGUI requires a login. For now, the password is randomly generated and can be accessed from your MMX home directory. In order to access the WebGUI, your node needs to be running (not necessarily synced).
+
+For Windows, it's usually located at `C:\Users\name\.mmx\PASSWD` (open with notepad or text editor)
+
+For Linux, it's usually located at `~/mmx-node/PASSWD` (cat or nano into the file)
+
+**If somehow the password you copied is wrong, you might have to generate a new one.**
+Delete `config/local/passwd` file, run `./activate.sh` again and restart your node.
+
+### _I've got some remote farmer/harvester setup all in a LAN. How do I access web GUI to my main node?_
+Edit the `HttpServer.json` file in your `config/local/` folder (if not already there) and put `{"host": "0.0.0.0"}` in it.
+
+Then entering `[MMX-node-IP]:11380/gui/` in the URL bar of your browser should work.
+
+For example, `192.168.1.123:11380/gui/`
+
+Option #2:
+https://github.com/madMAx43v3r/mmx-node/wiki/Remote-Services#remote-connections-over-public-networks
+
+
+# Wallet
+
+### _I start my node and it showed warnings that it cannot find my wallet. How do I create a wallet?_
+You can create a wallet in the GUI now. Otherwise see below:
+
+Make sure that your wallet file is named `wallet.dat` and not `wallet_xxxxx.dat` and that it's placed in the right folder.
+
+For Linux, it's `~/mmx-node/`
+
+For Windows, it's `C:\Users\name\.mmx\`
+
+If the file does not exist yet, you may create it by running `mmx wallet create -f [filename.dat]`
+
+If you did not specify a filename, the default name `wallet.dat` will be used.
+
+If you have to create multiple wallets, be sure to edit your `/config/local/Wallet.json` file and enter your `wallet_name.dat` file under `"key_files+": []`
+
+**`mmx wallet create` is the only MMX command that does not need the node running in the background.**
+
+### _I lost my wallet.dat file, can I recover it with my 64-character seed hash instead?_
+Yes. Run `mmx wallet create [seed hash]`. You might have to cd into the /mmx-node/ folder and run `source ./activate.sh`
+
+For Windows users, run the command from the shortcut placed in the start menu.
+
+### _Is it true that the seed hash will be replaced with 24 mnemonic words instead? How can I get them if I had an old wallet created before testnet7?_
+Yes, once your node properly loads your wallet.dat, you can run `mmx wallet get seed` to show your 24 mnemonic seed words.
+
+In the future, you can even generate your wallet.dat file with `mmx wallet create --mnemonic word1 word2 word3 .....`
+
+### _So I have setup everything right, my farmer is working, my plots are passing the filter. I have a large % of the netspace and I have farmed for days but I haven't won any MMX coins. What's wrong?_
+
+**Realize that with the same seed hash, your wallet address has changed since testnet7.**
+
+If you have set your farming reward sent to a cold wallet, you need to check that you still have proper access to the old wallet, or update the reward address to a new one. You can check your farmer reward address in `Farmer.json` file in `/config/local/`.
+
+If you currently have that set to point to `null` address, it's going to send reward to your default/hot wallet.
+
+
+# Virtual Plots (VP)
+
+### _What is a Virtual Plot and how does it work?_
+Virtual Plots allow to further increase efficiency/lower electricity use in crypto-mining. VPs can only get transaction fees (not whole block rewards). Each MMX deposited constitutes 50 GB of equivalent plot size, ie. 1 TB = 20 MMX. Withdrawal is possible but 10% is burned when doing so.
+
+### _How do I manage my VPs?_
+Go to WebGUI > Wallet > Plots. It is recommended to keep a single Virtual Plot below 0.1% of the total netspace, otherwise its win chance is reduced.
+
+New VPs are picked up at the next plot reload, to farm a new VP immediately you have to reload your plots.
+The harvester will then report your virtual plots:
+
+`Harvester    Loaded 3 (physical) plots, 1 virtual plots, 0.0767306 TB total, 19.94 MMX total, took 2.341 sec`
+
+### _So I have deposited all my MMX into my VP contract. Can I shutdown my node and expect lots of MMX in a year?_
+No. VPs still need to be farmed like regular plots.
+
+
+# Timelord
+
+### _I have the fastest CPU in the world. How do I run the timelord and how would I check/know that I am winning timelord rewards?_
+You can run the node with ./run_node.sh --timelord 1. Look for a line that says, "timelord = "true/false.
+
+For a more permanent solution, create a file named `timelord` in your /config/local/ folder and put "true/false" in there and nothing else.
+
+You should know if you're the fastest timelord in the network if your terminal/log says , "Broadcasting VDF for height XXXXX...."
+
+Then you'll be randomly rewarded 0.5 MMX (for testnet7) every ~256 blocks.
+
