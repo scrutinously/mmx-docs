@@ -35,3 +35,9 @@ sandbox.config.json
 
 # Cached requests
 .cache
+
+# firebase
+.firebase/
+.firebaserc
+firebase.json
+
